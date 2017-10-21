@@ -1,0 +1,6 @@
+[submodule "ffmpegthumbnailer"]
+	path = ffmpegthumbnailer
+	url = git@github.com:jwdeitch/ffmpegthumbnailer.git
+[submodule "librestd"]
+	path = librestd
+	url = https://github.com/evilsocket/librestd.git

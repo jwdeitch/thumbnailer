@@ -2,7 +2,7 @@
 #include <restd.h>
 #include <thread>
 
-class hello_world : public restd::http_controller {
+class router : public restd::http_controller {
 
 protected:
 	restd::json NotFound = {
@@ -20,9 +20,9 @@ public:
 	}
 
 	// POST /video
-	void json(restd::http_request &req, restd::http_response &resp) {
-		restd::json input_req_doc;
-
+	void video(restd::http_request &req, restd::http_response &resp) {
+		restd::log(restd::DEBUG, "Incoming Request: %s", req.body.c_str());
+		auto input_req_doc = restd::json::parse(req.body.c_str());
 		resp.json(this->NotFound.dump());
 	}
 };
@@ -42,9 +42,10 @@ int main() {
 
 		restd::http_server server(address.c_str(), port, std::thread::hardware_concurrency());
 
-		hello_world hw;
+		router hw;
 
-		RESTD_ROUTE(server, restd::GET, "/", hw, hello_world::index);
+		RESTD_ROUTE(server, restd::GET, "/", hw, router::index);
+		RESTD_ROUTE(server, restd::POST, "/video", hw, router::video);
 
 		server.start();
 	}

@@ -1,0 +1,9 @@
+{
+  "path": "https://cdn.rsa.pub/content/WhosRigh1954/WhosRigh1954.ogv",
+  "meta": {
+    "callback":"http://localhost/received",
+    "pass-through": {
+      "test_data": "test_value"
+    }
+  }
+}

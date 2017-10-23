@@ -3,6 +3,12 @@
 #include <thread>
 
 class hello_world : public restd::http_controller {
+
+protected:
+	restd::json NotFound = {
+			{"error", "not found"}
+	};
+
 public:
 
 	// GET /
@@ -11,6 +17,13 @@ public:
 		ss << "thumbnailer index";
 
 		resp.html(ss.str());
+	}
+
+	// POST /video
+	void json(restd::http_request &req, restd::http_response &resp) {
+		restd::json input_req_doc;
+
+		resp.json(this->NotFound.dump());
 	}
 };
 

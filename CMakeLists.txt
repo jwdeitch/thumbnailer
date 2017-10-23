@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.9)
-project(thumbnailer)
+project(thumbnailer VERSION 0.0.1)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
 add_subdirectory(ffmpegthumbnailer)
 add_subdirectory(librestd)
@@ -10,3 +12,4 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/librestd/include")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/ffmpegthumbnailer/libffmpegthumbnailer")
 
 add_executable(thumbnailer main.cpp videos.cpp videos.h)
+target_link_libraries(thumbnailer restd Threads::Threads)

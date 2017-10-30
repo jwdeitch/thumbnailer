@@ -5,13 +5,13 @@
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include <curl/curlbuild.h>
+#include "string_utils.h"
 
 using namespace std;
 
-class Downloader {
-	static string Download(const string &remote_path);
-private:
-	static size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
+class Download {
+public:
+	static string Http(const string &remote_path);
 };
 
 

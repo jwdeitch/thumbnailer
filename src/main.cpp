@@ -1,7 +1,7 @@
 #include <iostream>
 #include <restd.h>
 #include <thread>
-#include <Downloader.h>
+#include "Download.h"
 
 struct message {
 	string path;
@@ -33,7 +33,7 @@ public:
 		restd::log(restd::DEBUG, "Incoming Request: %s", req.body.c_str());
 		auto input_req_doc = restd::json::parse(req.body.c_str());
 		message payload = input_req_doc;
-		stirng working_path = Downloader::Download(payload["path"])
+		string working_path = Download::Http(payload["path"]);
 		restd::log(restd::DEBUG, "Incoming Request: %s", payload.path.c_str());
 
 		resp.json(this->NotFound.dump());

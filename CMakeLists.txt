@@ -11,6 +11,11 @@ set(CMAKE_CXX_STANDARD 17)
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/librestd/include")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/ffmpegthumbnailer/libffmpegthumbnailer")
 
+set(CURL_LIBRARY "-lcurl")
+find_package(CURL REQUIRED)
+
+include_directories(${CURL_INCLUDE_DIR})
+
 file(GLOB_RECURSE SOURCE_LIST "src/*.cpp" "src/*.h")
 add_executable(thumbnailer ${SOURCE_LIST})
-target_link_libraries(thumbnailer restd Threads::Threads)
+target_link_libraries(thumbnailer restd Threads::Threads ${CURL_LIBRARIES})

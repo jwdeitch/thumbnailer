@@ -1,6 +1,6 @@
 #include "Download.h"
 
-static string Download::Http(const string &remote_path) {
+string Download::Http(const string &remote_path) {
 	CURL *curl;
 	FILE *fp;
 	string outfilename = "/tmp/" + random_str(10) + get_file_extension(remote_path);

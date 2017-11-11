@@ -17,7 +17,7 @@ string random_str(size_t length) {
 }
 
 string get_file_extension(string const &subject) {
-	return subject.substr(subject.find_last_of(".") + 1);
+	return subject.substr(subject.find_last_of("."));
 }
 
 #endif //THUMBNAILER_STRING_UTILS_H

@@ -1,2 +1,12 @@
 cmake-build-debug/
 .idea
+
+CPack*
+CMakeCache.txt
+cmake_*
+*.pc
+compile_commands.json
+config.h
+Makefile
+thumbnailer
+*cbp

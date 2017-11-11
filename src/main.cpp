@@ -2,14 +2,8 @@
 #include <restd.h>
 #include <thread>
 #include "Download.h"
+#include "message_parser.h"
 
-struct message {
-	string path;
-	struct meta {
-		string callback;
-		restd::json::object_t passThrough;
-	};
-};
 
 class router : public restd::http_controller {
 
@@ -22,19 +16,18 @@ public:
 
 	// GET /
 	void index(restd::http_request &req, restd::http_response &resp) {
-		std::stringstream ss;
-		ss << "thumbnailer index";
-
-		resp.html(ss.str());
+		resp.json({"msg", "Thumbnailer API index"});
 	}
 
 	// POST /video
 	void video(restd::http_request &req, restd::http_response &resp) {
 		restd::log(restd::DEBUG, "Incoming Request: %s", req.body.c_str());
-		auto input_req_doc = restd::json::parse(req.body.c_str());
-		message payload = input_req_doc;
-		string working_path = Download::Http(payload["path"]);
-		restd::log(restd::DEBUG, "Incoming Request: %s", payload.path.c_str());
+
+		auto payload = restd::json::parse(req.body.c_str());
+
+		string working_path = Download::Http(payload["path"].get<std::string>());
+
+		restd::log(restd::DEBUG, "Incoming Request: %s", payload["path"].get<std::string>().c_str());
 
 		resp.json(this->NotFound.dump());
 	}

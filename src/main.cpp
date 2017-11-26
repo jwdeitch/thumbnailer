@@ -4,6 +4,9 @@
 #include "Download.h"
 #include "message_parser.h"
 #include "videothumbnailer.h"
+#include "filmstripfilter.h"
+
+using namespace ffmpegthumbnailer;
 
 class router : public restd::http_controller {
 
@@ -21,28 +24,62 @@ public:
 
 	// POST /video
 	void video(restd::http_request &req, restd::http_response &resp) {
+
+		bool filmStripOverlay = false;
+		bool preferEmbeddedMetadata = false;
+		string seekTime;
+		int seekPercentage = 10;
+		string inputFile;
+		string outputFile;
+		string imageFormat;
+
 		restd::log(restd::DEBUG, "Incoming Request: %s", req.body.c_str());
 
 		auto payload = restd::json::parse(req.body.c_str());
 
 		auto path = payload["path"].get<string>();
 
-		restd::log(restd::DEBUG, "-------- %s", path.c_str());
-
+		restd::log(restd::DEBUG, "Downloading: %s", path.c_str());
 		string working_path = Download::Http(path);
+
+		restd::log(restd::DEBUG, "Thumbnailing: %s", path.c_str());
 		ffmpegthumbnailer::VideoThumbnailer videoThumbnailer(0,
 															 true, //workaround issues
 															 true, //maintain aspect rat.
 															 8, //img quality
 															 false); //smart frame det.;
+
+		ThumbnailerImageType imageType = Png;
+
 		videoThumbnailer.setThumbnailSize("128"); // thumbnail size
-		videoThumbnailer.setLogCallback([] (ThumbnailerLogLevel lvl, const std::string& msg) {
+		videoThumbnailer.setLogCallback([](ThumbnailerLogLevel lvl, const std::string &msg) {
 			if (lvl == ThumbnailerLogLevelInfo)
 				std::cout << msg << std::endl;
 			else
 				std::cerr << msg << std::endl;
 		});
-	}
+
+		restd::log(restd::DEBUG, "Finished: %s", path.c_str());
+
+		FilmStripFilter *filmStripFilter = nullptr;
+
+		if (filmStripOverlay) {
+			filmStripFilter = new FilmStripFilter();
+			videoThumbnailer.addFilter(filmStripFilter);
+		}
+
+		videoThumbnailer.setPreferEmbeddedMetadata(preferEmbeddedMetadata);
+
+		if (!seekTime.empty()) {
+			videoThumbnailer.setSeekTime(seekTime);
+		} else {
+			videoThumbnailer.setSeekPercentage(seekPercentage);
+		}
+		videoThumbnailer.generateThumbnail(inputFile, imageType, outputFile);
+
+		delete filmStripFilter;
+
+	};
 };
 
 int main() {
@@ -72,4 +109,4 @@ int main() {
 	}
 
 	return 0;
-}
+};

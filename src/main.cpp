@@ -32,25 +32,25 @@ public:
 		string outputFile;
 		string imageFormat;
 
+		auto* msg = new Message();
 		restd::log(restd::DEBUG, "Incoming Request: %s", req.body.c_str());
 
 		auto payload = restd::json::parse(req.body.c_str());
 
-		auto path = payload["path"].get<string>();
+		msg->remote_path = payload["path"].get<string>();
 
-		restd::log(restd::DEBUG, "Downloading: %s", path.c_str());
-		auto working_path = Download::Http(path);
+		restd::log(restd::DEBUG, "---- 1");
+		Download::Http(msg);
+		restd::log(restd::DEBUG, "---- 2");
 
-		restd::log(restd::DEBUG, "Thumbnailing: %s", path.c_str());
+		restd::log(restd::DEBUG, "Thumbnailing: %s", *msg->remote_path.c_str());
 		ffmpegthumbnailer::VideoThumbnailer videoThumbnailer(0,
 															 true, //workaround issues
 															 true, //maintain aspect rat.
 															 8, //img quality
 															 false); //smart frame det.;
 
-		ThumbnailerImageType imageType = Png;
-
-		videoThumbnailer.setThumbnailSize("128"); // thumbnail size
+		videoThumbnailer.setThumbnailSize("512"); // thumbnail size
 		videoThumbnailer.setLogCallback([](ThumbnailerLogLevel lvl, const std::string &msg) {
 			if (lvl == ThumbnailerLogLevelInfo)
 				std::cout << msg << std::endl;
@@ -58,7 +58,7 @@ public:
 				std::cerr << msg << std::endl;
 		});
 
-		restd::log(restd::DEBUG, "Finished: %s", path.c_str());
+		restd::log(restd::DEBUG, "Finished: %s", *msg->remote_path.c_str());
 
 		FilmStripFilter *filmStripFilter = nullptr;
 
@@ -69,19 +69,19 @@ public:
 
 		videoThumbnailer.setPreferEmbeddedMetadata(preferEmbeddedMetadata);
 
-		restd::log(restd::DEBUG, "working path: %s", working_path.c_str());
+		restd::log(restd::DEBUG, "working path: %s", *msg->id.c_str());
 		int seekPercentage = 0;
-		while (seekPercentage != 100) {
+		while (seekPercentage < 100) {
 			if (!seekTime.empty()) {
 				videoThumbnailer.setSeekTime(seekTime);
 			} else {
 				videoThumbnailer.setSeekPercentage(seekPercentage);
 			}
-			string thumb_out_name = "OUTPUT-" + to_string(seekPercentage) + ".png";
-			videoThumbnailer.generateThumbnail(working_path,
-											   imageType,
-											   thumb_out_name);
-			restd::log(restd::DEBUG, "Thumbnail written: %s", thumb_out_name.c_str());
+
+			videoThumbnailer.generateThumbnail(msg->getInputDocumentFilePath(),
+											   Png, // image type
+											   msg->getThumbnailFileName(seekPercentage));
+			restd::log(restd::DEBUG, "Thumbnail written: %s", msg->getThumbnailFileName(seekPercentage).c_str());
 			seekPercentage = seekPercentage + 10;
 		}
 

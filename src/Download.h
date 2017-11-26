@@ -3,15 +3,17 @@
 
 #include <string>
 #include <curl/curl.h>
+#include <restd.h>
 #include <curl/easy.h>
 #include <curl/curlbuild.h>
 #include "string_utils.h"
+#include "message_parser.h"
 
 using namespace std;
 
 class Download {
 public:
-	static string Http(const string &remote_path);
+	static void Http(Message *msg);
 };
 
 

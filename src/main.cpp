@@ -3,7 +3,7 @@
 #include <thread>
 #include "Download.h"
 #include "message_parser.h"
-
+#include "libffmpegthumbnailer/videothumbnailer.h"
 
 class router : public restd::http_controller {
 
@@ -25,18 +25,30 @@ public:
 
 		auto payload = restd::json::parse(req.body.c_str());
 
-		string working_path = Download::Http(payload["path"].get<std::string>());
+		auto path = payload["path"].get<string>();
 
-		restd::log(restd::DEBUG, "Incoming Request: %s", payload["path"].get<std::string>().c_str());
+		restd::log(restd::DEBUG, "-------- %s", path.c_str());
 
-		resp.json(this->NotFound.dump());
+		string working_path = Download::Http(path);
+		ffmpegthumbnailer::VideoThumbnailer videoThumbnailer(0,
+															 true, //workaround issues
+															 true, //maintain aspect rat.
+															 8, //img quality
+															 false); //smart frame det.;
+		videoThumbnailer.setThumbnailSize("128"); // thumbnail size
+		videoThumbnailer.setLogCallback([] (ThumbnailerLogLevel lvl, const std::string& msg) {
+			if (lvl == ThumbnailerLogLevelInfo)
+				std::cout << msg << std::endl;
+			else
+				std::cerr << msg << std::endl;
+		});
 	}
 };
 
 int main() {
 	std::string address = "127.0.0.1";
 	unsigned short port = 8080;
-	restd::log_level_t llevel = restd::INFO;
+	restd::log_level_t llevel = restd::DEBUG;
 	int c;
 
 	try {

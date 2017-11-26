@@ -28,7 +28,6 @@ public:
 		bool filmStripOverlay = false;
 		bool preferEmbeddedMetadata = false;
 		string seekTime;
-		int seekPercentage = 10;
 		string inputFile;
 		string outputFile;
 		string imageFormat;
@@ -40,7 +39,7 @@ public:
 		auto path = payload["path"].get<string>();
 
 		restd::log(restd::DEBUG, "Downloading: %s", path.c_str());
-		string working_path = Download::Http(path);
+		auto working_path = Download::Http(path);
 
 		restd::log(restd::DEBUG, "Thumbnailing: %s", path.c_str());
 		ffmpegthumbnailer::VideoThumbnailer videoThumbnailer(0,
@@ -70,12 +69,21 @@ public:
 
 		videoThumbnailer.setPreferEmbeddedMetadata(preferEmbeddedMetadata);
 
-		if (!seekTime.empty()) {
-			videoThumbnailer.setSeekTime(seekTime);
-		} else {
-			videoThumbnailer.setSeekPercentage(seekPercentage);
+		restd::log(restd::DEBUG, "working path: %s", working_path.c_str());
+		int seekPercentage = 0;
+		while (seekPercentage != 100) {
+			if (!seekTime.empty()) {
+				videoThumbnailer.setSeekTime(seekTime);
+			} else {
+				videoThumbnailer.setSeekPercentage(seekPercentage);
+			}
+			string thumb_out_name = "OUTPUT-" + to_string(seekPercentage) + ".png";
+			videoThumbnailer.generateThumbnail(working_path,
+											   imageType,
+											   thumb_out_name);
+			restd::log(restd::DEBUG, "Thumbnail written: %s", thumb_out_name.c_str());
+			seekPercentage = seekPercentage + 10;
 		}
-		videoThumbnailer.generateThumbnail(inputFile, imageType, outputFile);
 
 		delete filmStripFilter;
 

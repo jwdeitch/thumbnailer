@@ -3,7 +3,7 @@
 #include <thread>
 #include "Download.h"
 #include "message_parser.h"
-#include "libffmpegthumbnailer/videothumbnailer.h"
+#include "videothumbnailer.h"
 
 class router : public restd::http_controller {
 

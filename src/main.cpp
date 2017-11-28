@@ -1,8 +1,6 @@
 #include <iostream>
 #include <restd.h>
-#include <thread>
 #include "Download.h"
-#include "message_parser.h"
 #include "videothumbnailer.h"
 #include "filmstripfilter.h"
 
@@ -32,33 +30,31 @@ public:
 		string outputFile;
 		string imageFormat;
 
-		auto* msg = new Message();
+		auto *msg = new Message();
 		restd::log(restd::DEBUG, "Incoming Request: %s", req.body.c_str());
 
 		auto payload = restd::json::parse(req.body.c_str());
 
+		// TODO: json schema validation
 		msg->remote_path = payload["path"].get<string>();
 
-		restd::log(restd::DEBUG, "---- 1");
 		Download::Http(msg);
-		restd::log(restd::DEBUG, "---- 2");
 
-		restd::log(restd::DEBUG, "Thumbnailing: %s", *msg->remote_path.c_str());
+		restd::log(restd::DEBUG, "Thumbnailing: %s", msg->id);
 		ffmpegthumbnailer::VideoThumbnailer videoThumbnailer(0,
-															 true, //workaround issues
-															 true, //maintain aspect rat.
-															 8, //img quality
-															 false); //smart frame det.;
+															 true,   //workaround issues
+															 true,   //maintain aspect rat.
+															 8,      //img quality
+															 false   //smart frame det.;
+		);
 
 		videoThumbnailer.setThumbnailSize("512"); // thumbnail size
+
 		videoThumbnailer.setLogCallback([](ThumbnailerLogLevel lvl, const std::string &msg) {
-			if (lvl == ThumbnailerLogLevelInfo)
-				std::cout << msg << std::endl;
-			else
-				std::cerr << msg << std::endl;
+			cout << msg << std::endl;
 		});
 
-		restd::log(restd::DEBUG, "Finished: %s", *msg->remote_path.c_str());
+		restd::log(restd::DEBUG, "Finished: %s", msg->id);
 
 		FilmStripFilter *filmStripFilter = nullptr;
 
@@ -69,7 +65,6 @@ public:
 
 		videoThumbnailer.setPreferEmbeddedMetadata(preferEmbeddedMetadata);
 
-		restd::log(restd::DEBUG, "working path: %s", *msg->id.c_str());
 		int seekPercentage = 0;
 		while (seekPercentage < 100) {
 			if (!seekTime.empty()) {
@@ -91,6 +86,7 @@ public:
 };
 
 int main() {
+	srand(time(NULL));
 	std::string address = "127.0.0.1";
 	unsigned short port = 8080;
 	restd::log_level_t llevel = restd::DEBUG;

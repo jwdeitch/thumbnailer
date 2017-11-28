@@ -17,6 +17,6 @@ find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 
 file(GLOB_RECURSE SOURCE_LIST "src/*.cpp" "src/*.h")
-add_executable(thumbnailer ${SOURCE_LIST})
+add_executable(thumbnailer ${SOURCE_LIST} src/string_utils.cpp)
 target_link_libraries(thumbnailer libffmpegthumbnailer restd Threads::Threads ${CURL_LIBRARIES})
 set_target_properties(thumbnailer PROPERTIES LINKER_LANGUAGE CXX)

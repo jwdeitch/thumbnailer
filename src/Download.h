@@ -6,7 +6,6 @@
 #include <restd.h>
 #include <curl/easy.h>
 #include <curl/curlbuild.h>
-#include "string_utils.h"
 #include "message_parser.h"
 
 using namespace std;
